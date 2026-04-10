@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.trisignal.trader</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/bytedance/Documents/claude/okx/run_trisignal.sh</string>
+    </array>
+
+    <!-- 北京时间 03/07/11/15/19/23 点 07 分 = UTC 19/23/03/07/11/15 点 07 分 -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>19</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>23</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>7</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>11</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>15</integer><key>Minute</key><integer>7</integer></dict>
+    </array>
+
+    <!-- 休眠后唤醒补跑错过的任务 -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/bytedance/.claude/skills/trisignal-trader/logs/launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/bytedance/.claude/skills/trisignal-trader/logs/launchd_err.log</string>
+</dict>
+</plist>
