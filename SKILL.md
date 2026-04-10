@@ -221,7 +221,9 @@ market_get_open_interest(instType="SWAP", instId="XRP-USDT-SWAP")
 ```
 账户可承受风险额 = 账户净值 × 3%
 止损价（多头）  = 开仓价 × 0.98
+止盈价（多头）  = 开仓价 × 1.04
 止损价（空头）  = 开仓价 × 1.02
+止盈价（空头）  = 开仓价 × 0.96
 单位风险        = |开仓价 - 止损价|
 sz              = 账户可承受风险额 / 单位风险
 ```
@@ -306,9 +308,20 @@ account_get_positions(instType="SWAP")
 
 ---
 
-## Step 10：止损规则
+## Step 10：止损与止盈规则
 
-开仓成功后立即执行：
+止损价与止盈价计算：
+
+```
+止损价（多头）= 开仓价 × 0.98
+止盈价（多头）= 开仓价 × 1.04
+止损价（空头）= 开仓价 × 1.02
+止盈价（空头）= 开仓价 × 0.96
+```
+
+盈亏比固定为 2:1。
+
+开仓成功后立即执行（止损 + 止盈合并为一条 OCO 委托）：
 
 ```python
 swap_place_algo_order(
@@ -316,16 +329,19 @@ swap_place_algo_order(
   tdMode="isolated",
   side="sell",           # 平多；平空用 "buy"
   posSide="long",        # 平空用 "short"
-  ordType="conditional",
+  ordType="oco",
   sz="<同开仓 sz>",
   tgtCcy="base_ccy",
   slTriggerPx="<止损价>",
-  slOrdPx="-1"
+  slOrdPx="-1",
+  tpTriggerPx="<止盈价>",
+  tpOrdPx="-1"
 )
 ```
 
-- 止损不得省略
-- 止损设置失败 → 必须报警并写入记录，不得静默忽略
+- 止损与止盈不得省略
+- 设置失败 → 必须报警并写入记录，不得静默忽略
+- 止盈触发后视为本轮交易完成，记录实现盈亏
 
 ---
 
@@ -362,11 +378,12 @@ SOL 评分：X/10 — 理由：
 方向：做多 / 做空
 开仓价：
 止损价：
+止盈价：
 sz：
 ordType：market
 tag：agentTradeKit
 下单结果：
-止损结果：
+止损止盈结果：
 本轮风险额：
 执行模式：
 ```
@@ -490,7 +507,8 @@ ATR：
   sz：
   下单结果：
   止损价格：
-  止损状态：
+  止盈价格：
+  止损止盈状态：
 
 （观望/跳过时）
   不执行原因：
