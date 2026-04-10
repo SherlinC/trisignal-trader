@@ -126,14 +126,14 @@ okx market indicator atr  <instId> --bar 4H --params 14 --limit 1
 ## Step 2：市场情绪与事件面采集
 
 ```
-market_get_funding_rate(instId="BTC-USDT-SWAP")
-market_get_funding_rate(instId="ETH-USDT-SWAP")
-market_get_funding_rate(instId="SOL-USDT-SWAP")
-market_get_funding_rate(instId="XRP-USDT-SWAP")
-market_get_open_interest(instType="SWAP", instId="BTC-USDT-SWAP")
-market_get_open_interest(instType="SWAP", instId="ETH-USDT-SWAP")
-market_get_open_interest(instType="SWAP", instId="SOL-USDT-SWAP")
-market_get_open_interest(instType="SWAP", instId="XRP-USDT-SWAP")
+okx market funding-rate BTC-USDT-SWAP
+okx market funding-rate ETH-USDT-SWAP
+okx market funding-rate SOL-USDT-SWAP
+okx market funding-rate XRP-USDT-SWAP
+okx market open-interest --instType SWAP --instId BTC-USDT-SWAP
+okx market open-interest --instType SWAP --instId ETH-USDT-SWAP
+okx market open-interest --instType SWAP --instId SOL-USDT-SWAP
+okx market open-interest --instType SWAP --instId XRP-USDT-SWAP
 ```
 
 **事件面**：参考外部热点事件，仅作辅助，不得单独作为开仓依据。
@@ -234,7 +234,7 @@ sz              = 账户可承受风险额 / 单位风险
 
 **获取账户净值**：
 ```
-account_get_balance(ccy="USDT")
+okx --profile okx-live account balance USDT
 ```
 
 **校验**：以下任一情况不得开仓：
@@ -283,29 +283,28 @@ account_get_balance(ccy="USDT")
 
 仅当最终结果为 `开仓` 时执行。
 
-```python
-swap_place_order(
-  instId="<选定标的>",
-  tdMode="isolated",
-  side="buy",          # 做多；做空用 "sell"
-  posSide="long",      # 做空用 "short"
-  ordType="market",
-  sz="<计算出的 sz>",
-  tgtCcy="base_ccy",
-  tag="agentTradeKit"
-)
+```bash
+okx --profile okx-live swap place \
+  --instId <选定标的> \
+  --tdMode isolated \
+  --side buy \
+  --posSide long \
+  --ordType market \
+  --sz <计算出的 sz> \
+  --tgtCcy base_ccy \
+  --tag agentTradeKit
 ```
 
-**强制约束**：`tag = "agentTradeKit"` 缺失则视为参数不合法，不允许提交订单。
+**强制约束**：`--tag agentTradeKit` 缺失则视为参数不合法，不允许提交订单。
 
 **下单前设置杠杆**：
-```
-swap_set_leverage(instId="<选定标的>", lever="3", mgnMode="isolated")
+```bash
+okx --profile okx-live swap leverage --instId <选定标的> --lever 3 --mgnMode isolated --posSide long
 ```
 
 **下单前检查持仓**：
-```
-account_get_positions(instType="SWAP")
+```bash
+okx --profile okx-live swap positions
 ```
 
 持仓检查逻辑（按顺序）：
@@ -331,20 +330,19 @@ account_get_positions(instType="SWAP")
 
 开仓成功后立即执行（止损 + 止盈合并为一条 OCO 委托）：
 
-```python
-swap_place_algo_order(
-  instId="<选定标的>",
-  tdMode="isolated",
-  side="sell",           # 平多；平空用 "buy"
-  posSide="long",        # 平空用 "short"
-  ordType="oco",
-  sz="<同开仓 sz>",
-  tgtCcy="base_ccy",
-  slTriggerPx="<止损价>",
-  slOrdPx="-1",
-  tpTriggerPx="<止盈价>",
-  tpOrdPx="-1"
-)
+```bash
+okx --profile okx-live swap algo place \
+  --instId <选定标的> \
+  --tdMode isolated \
+  --side sell \
+  --posSide long \
+  --ordType oco \
+  --sz <同开仓 sz> \
+  --tgtCcy base_ccy \
+  --slTriggerPx <止损价> \
+  --slOrdPx=-1 \
+  --tpTriggerPx <止盈价> \
+  --tpOrdPx=-1
 ```
 
 - 止损与止盈不得省略
