@@ -97,31 +97,29 @@ Step 13 → 汇入 daily review 体系
 
 ## Step 1：数据采集
 
-### 行情数据
+### 指标接口（直接调用，无需手动计算）
+
+每个标的并行调用以下三条命令：
 
 ```
-market_get_candles(instId="BTC-USDT-SWAP", bar="4H", limit=80)
-market_get_candles(instId="ETH-USDT-SWAP", bar="4H", limit=80)
-market_get_candles(instId="SOL-USDT-SWAP", bar="4H", limit=80)
-market_get_candles(instId="XRP-USDT-SWAP", bar="4H", limit=80)
+okx market indicator ma   <instId> --bar 4H --params 5,10,20,60 --limit 1
+okx market indicator macd <instId> --bar 4H --limit 1
+okx market indicator atr  <instId> --bar 4H --params 14 --limit 1
 ```
 
-### 指标计算（基于 K 线 close 价格手动计算）
+- `ma` 返回：MA5 / MA10 / MA20 / MA60
+- `macd` 返回：DIF / DEA / Histogram（即 macd 字段）
+- `atr` 返回：ATR(14)
 
-- `MA5`：最新 5 根收盘均值
-- `MA10`：最新 10 根收盘均值
-- `MA20`：最新 20 根收盘均值
-- `MA60`：最新 60 根收盘均值
-- `MACD`：EMA12 / EMA26 → DIF；EMA9(DIF) → DEA；Histogram = (DIF - DEA) × 2
-- `ATR(14)`：14 根 True Range 均值
+**不需要拉取原始 K 线，不需要手动计算任何指标。**
 
 ### 单标异常处理
 
 若某标的出现以下任一情况，跳过该标的但继续其他标的流程，并记录标的名称、失败步骤、失败原因：
 
-- 接口调用失败 / 返回为空 / 数据条数不足 / 指标无法计算 / 数据明显异常
+- 接口调用失败 / 返回为空 / 指标值异常
 
-若三个标的全部不可用 → 本轮直接输出 `跳过`，记录"全部标的数据不可用"。
+若四个标的全部不可用 → 本轮直接输出 `跳过`，记录"全部标的数据不可用"。
 
 ---
 
