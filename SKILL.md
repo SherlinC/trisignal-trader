@@ -1,7 +1,7 @@
 ---
 name: trisignal-trader
-version: 4.0.0
-description: "TriSignal Trader：4h 周期 BTC/ETH/SOL 三选一多信号融合策略，评分制决策，自动下单止损，模拟盘优先，支持 daily review。"
+version: 4.1.0
+description: "TriSignal Trader：4h 周期 BTC/ETH/SOL/XRP 四选一多信号融合策略，评分制决策，自动下单止损止盈，live 模式实盘，支持 daily review。"
 triggers:
   - "/trisignal-trader"
   - "trisignal"
@@ -309,8 +309,12 @@ swap_set_leverage(instId="<选定标的>", lever="3", mgnMode="isolated")
 ```
 account_get_positions(instType="SWAP")
 ```
-- 已有同方向持仓 → 跳过
-- 当前持仓数 ≥ 2 → 跳过（触发风控规则 9）
+
+持仓检查逻辑（按顺序）：
+1. 该标的已有同方向仓位（pos > 0）→ 跳过，不重复开仓
+2. 该标的有挂单未成交的 algo 止损止盈单，但仓位为 0 → 说明仓位已平，algo 单为残留，**可以重新开仓**（残留 algo 单会在开仓后被新 OCO 覆盖或手动清理）
+3. 当前持仓数 ≥ 2 → 跳过（触发风控规则 9）
+4. 有反方向仓位（对冲）→ 跳过（触发风控规则 10）
 
 ---
 
@@ -353,45 +357,70 @@ swap_place_algo_order(
 
 ## 交易记录要求
 
+### 记录存储规则
+
+所有记录必须写入 `~/.claude/skills/trisignal-trader/records/` 目录下的 JSON 文件：
+
+- **Decision Snapshot**：每轮必须写入，文件名 `snapshot_YYYYMMDD_HHMM.json`
+- **Trade Record**：仅开仓时写入，文件名 `trade_YYYYMMDD_HHMM.json`
+- **Daily Summary**：每日汇总，文件名 `daily_YYYYMMDD.json`，每轮执行后追加更新
+
+若写入失败 → 在日志中输出完整 JSON 内容，并标注"⚠️ 文件写入失败，请手动保存"，不得静默忽略。
+
 ### Decision Snapshot（每轮必须记录）
 
-```
-执行时间：
-执行模式：
-分析周期：4h
-可用标的：
-跳过标的及原因：
-
-BTC 关键指标：MA5/MA10/MA20/MA60 | DIF/DEA/Hist | ATR | funding | OI变化
-ETH 关键指标：同上
-SOL 关键指标：同上
-
-BTC 评分：X/10 — 理由：
-ETH 评分：X/10 — 理由：
-SOL 评分：X/10 — 理由：
-
-最优标的：
-最终决策：开仓 / 观望 / 跳过
-风控结论：
-异常情况：
-是否进入下单阶段：
+```json
+{
+  "ts": "<ISO8601时间>",
+  "mode": "live",
+  "bar": "4h",
+  "assets": ["BTC-USDT-SWAP", "ETH-USDT-SWAP", "SOL-USDT-SWAP", "XRP-USDT-SWAP"],
+  "skipped": [],
+  "scores": {
+    "BTC": { "score": 0, "reason": "" },
+    "ETH": { "score": 0, "reason": "" },
+    "SOL": { "score": 0, "reason": "" },
+    "XRP": { "score": 0, "reason": "" }
+  },
+  "indicators": {
+    "BTC": { "ma5": 0, "ma10": 0, "ma20": 0, "ma60": 0, "dif": 0, "dea": 0, "hist": 0, "atr": 0, "funding": 0, "oi": 0 },
+    "ETH": {},
+    "SOL": {},
+    "XRP": {}
+  },
+  "best": "",
+  "direction": "",
+  "decision": "开仓 | 观望 | 跳过",
+  "risk_check": {
+    "funding_crowded": false,
+    "atr_filtered": false,
+    "account_risk": false,
+    "margin_capped": false
+  },
+  "anomalies": ""
+}
 ```
 
 ### Trade Record（仅开仓时记录）
 
-```
-标的：
-方向：做多 / 做空
-开仓价：
-止损价：
-止盈价：
-sz：
-ordType：market
-tag：agentTradeKit
-下单结果：
-止损止盈结果：
-本轮风险额：
-执行模式：
+```json
+{
+  "ts": "<ISO8601时间>",
+  "instId": "",
+  "direction": "long | short",
+  "entry_px": 0,
+  "sl_px": 0,
+  "tp_px": 0,
+  "sz": 0,
+  "margin_used": 0,
+  "risk_amt": 0,
+  "ordType": "market",
+  "tag": "agentTradeKit",
+  "order_id": "",
+  "algo_id": "",
+  "sl_tp_status": "ok | failed",
+  "mode": "live"
+}
 ```
 
 ---
