@@ -182,7 +182,7 @@ okx market open-interest --instType SWAP --instId XRP-USDT-SWAP
 
 ### 评分原则
 
-- 每个标的必须输出评分说明，说明高分或低分原因
+- **输出格式严格限制**：每个标的仅输出一行评分摘要，格式为 `标的：X/10 — 关键原因（≤25字）`，**禁止输出详细分析表格**
 - 最优标的评分 < 8 分 → 直接输出 `观望`，不进入开仓流程
 - 第一名与第二名差距 < 1.5 分 → 倾向 `观望`
 - 所有标的评分都不够高 → 倾向 `跳过`
@@ -237,13 +237,35 @@ okx market open-interest --instType SWAP --instId XRP-USDT-SWAP
 
 ## Step 7：仓位计算
 
+### 止损价计算（结构化 + ATR 双重验证）
+
+```
+ATR = ATR(14)，来自 Step 1 已采集数据
+
+结构止损（多头）= 最近 3 根 4H K 线的最低 low（swing low）
+结构止损（空头）= 最近 3 根 4H K 线的最高 high（swing high）
+
+结构距离 = |开仓价 - 结构止损|
+结构距离百分比 = 结构距离 / 开仓价
+
+验证规则：
+  若 结构距离 < 0.5 × ATR  → 结构位太近，改用 1.5 × ATR 作为止损距离
+  若 结构距离 > 2.5 × ATR  → 结构位太远，截断为 2.0 × ATR 作为止损距离
+  否则                      → 使用结构止损
+
+止损价（多头）= 开仓价 - 最终止损距离
+止损价（空头）= 开仓价 + 最终止损距离
+止盈价（多头）= 开仓价 + 最终止损距离 × 2   （盈亏比固定 2:1）
+止盈价（空头）= 开仓价 - 最终止损距离 × 2
+```
+
+**必须记录**：`sl_method`（structure / atr_min / atr_max）、`swing_low/high`、`atr_at_entry`、`sl_distance`、`sl_distance_pct`
+
+### 仓位计算
+
 ```
 账户可承受风险额 = 账户净值 × 6%
-止损价（多头）  = 开仓价 × 0.98
-止盈价（多头）  = 开仓价 × 1.04
-止损价（空头）  = 开仓价 × 1.02
-止盈价（空头）  = 开仓价 × 0.96
-单位风险        = |开仓价 - 止损价|
+单位风险        = 最终止损距离
 sz              = 账户可承受风险额 / 单位风险
 
 所需保证金      = sz × ctVal × 开仓价 / 杠杆（5x）
@@ -340,10 +362,8 @@ okx --profile okx-live swap positions
 止损价与止盈价计算：
 
 ```
-止损价（多头）= 开仓价 × 0.98
-止盈价（多头）= 开仓价 × 1.04
-止损价（空头）= 开仓价 × 1.02
-止盈价（空头）= 开仓价 × 0.96
+止损价 = 开仓价 ± 最终止损距离（由 Step 7 结构化+ATR 双重验证得出）
+止盈价 = 开仓价 ± 最终止损距离 × 2（盈亏比固定 2:1）
 ```
 
 盈亏比固定为 2:1。
@@ -407,25 +427,43 @@ okx --profile okx-live swap algo place \
   "assets": ["BTC-USDT-SWAP", "ETH-USDT-SWAP", "SOL-USDT-SWAP", "XRP-USDT-SWAP"],
   "skipped": [],
   "scores": {
-    "BTC": { "score": 0, "reason": "" },
-    "ETH": { "score": 0, "reason": "" },
-    "SOL": { "score": 0, "reason": "" },
-    "XRP": { "score": 0, "reason": "" }
+    "BTC": { "score": 0, "reason": "", "dim": { "ma": 0, "macd": 0, "structure": 0, "oi": 0, "funding": 0, "atr": 0, "event": 0 } },
+    "ETH": { "score": 0, "reason": "", "dim": { "ma": 0, "macd": 0, "structure": 0, "oi": 0, "funding": 0, "atr": 0, "event": 0 } },
+    "SOL": { "score": 0, "reason": "", "dim": { "ma": 0, "macd": 0, "structure": 0, "oi": 0, "funding": 0, "atr": 0, "event": 0 } },
+    "XRP": { "score": 0, "reason": "", "dim": { "ma": 0, "macd": 0, "structure": 0, "oi": 0, "funding": 0, "atr": 0, "event": 0 } }
   },
   "indicators": {
     "BTC": { "ma5": 0, "ma10": 0, "ma20": 0, "ma60": 0, "dif": 0, "dea": 0, "hist": 0, "atr": 0, "funding": 0, "oi": 0 },
-    "ETH": {},
-    "SOL": {},
-    "XRP": {}
+    "ETH": { "ma5": 0, "ma10": 0, "ma20": 0, "ma60": 0, "dif": 0, "dea": 0, "hist": 0, "atr": 0, "funding": 0, "oi": 0 },
+    "SOL": { "ma5": 0, "ma10": 0, "ma20": 0, "ma60": 0, "dif": 0, "dea": 0, "hist": 0, "atr": 0, "funding": 0, "oi": 0 },
+    "XRP": { "ma5": 0, "ma10": 0, "ma20": 0, "ma60": 0, "dif": 0, "dea": 0, "hist": 0, "atr": 0, "funding": 0, "oi": 0 }
   },
   "best": "",
-  "direction": "",
+  "direction": "long | short | none",
   "decision": "开仓 | 观望 | 跳过",
+  "decision_reason": "",
+  "position_plan": {
+    "entry_px": 0,
+    "swing_ref": 0,
+    "sl_method": "structure | atr_min | atr_max",
+    "sl_distance": 0,
+    "sl_distance_pct": 0,
+    "atr_at_entry": 0,
+    "sl_px": 0,
+    "tp_px": 0,
+    "risk_reward": "2:1",
+    "account_equity": 0,
+    "risk_amt": 0,
+    "sz": 0,
+    "margin_used": 0,
+    "margin_capped": false
+  },
   "risk_check": {
     "funding_crowded": false,
     "atr_filtered": false,
     "account_risk": false,
-    "margin_capped": false
+    "margin_capped": false,
+    "position_conflict": ""
   },
   "anomalies": ""
 }
@@ -441,15 +479,25 @@ okx --profile okx-live swap algo place \
   "entry_px": 0,
   "sl_px": 0,
   "tp_px": 0,
+  "sl_method": "structure | atr_min | atr_max",
+  "swing_ref": 0,
+  "sl_distance": 0,
+  "sl_distance_pct": 0,
+  "atr_at_entry": 0,
+  "risk_reward": "2:1",
   "sz": 0,
   "margin_used": 0,
   "risk_amt": 0,
+  "account_equity": 0,
+  "margin_capped": false,
   "ordType": "market",
   "tag": "agentTradeKit",
   "order_id": "",
   "algo_id": "",
   "sl_tp_status": "ok | failed",
-  "mode": "live"
+  "mode": "live",
+  "score_at_entry": 0,
+  "score_reason": ""
 }
 ```
 
@@ -517,6 +565,8 @@ okx --profile okx-live swap algo place \
 ---
 
 ## 输出格式
+
+> **Token 预算约束**：总输出必须控制在 4000 tokens 以内。评分分析每个标的仅一行，禁止详细表格，核心依据每项 ≤15 字，snapshot JSON 必须完整输出。
 
 ```
 ═══════════════════════════════════════════════════
