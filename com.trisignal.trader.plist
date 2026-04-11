@@ -8,21 +8,20 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/bytedance/Documents/claude/okx/run_trisignal.sh</string>
+        <string>/Users/bytedance/.claude/skills/trisignal-trader/run_trisignal.sh</string>
     </array>
 
-    <!-- 北京时间 03/07/11/15/19/23 点 07 分 = UTC 19/23/03/07/11/15 点 07 分 -->
+    <!-- 4H K线收盘后7分钟执行：北京时间 00:07/04:07/08:07/12:07/16:07/20:07 -->
     <key>StartCalendarInterval</key>
     <array>
-        <dict><key>Hour</key><integer>19</integer><key>Minute</key><integer>7</integer></dict>
-        <dict><key>Hour</key><integer>23</integer><key>Minute</key><integer>7</integer></dict>
-        <dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>7</integer></dict>
-        <dict><key>Hour</key><integer>7</integer><key>Minute</key><integer>7</integer></dict>
-        <dict><key>Hour</key><integer>11</integer><key>Minute</key><integer>7</integer></dict>
-        <dict><key>Hour</key><integer>15</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>0</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>16</integer><key>Minute</key><integer>7</integer></dict>
+        <dict><key>Hour</key><integer>20</integer><key>Minute</key><integer>7</integer></dict>
     </array>
 
-    <!-- 休眠后唤醒补跑错过的任务 -->
     <key>RunAtLoad</key>
     <false/>
 
@@ -30,5 +29,13 @@
     <string>/Users/bytedance/.claude/skills/trisignal-trader/logs/launchd.log</string>
     <key>StandardErrorPath</key>
     <string>/Users/bytedance/.claude/skills/trisignal-trader/logs/launchd_err.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/bytedance/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/bytedance</string>
+    </dict>
 </dict>
 </plist>
