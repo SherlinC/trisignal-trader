@@ -48,7 +48,7 @@ compatibility:
 4. 下单必须使用 `ordType = "market"`
 5. 每次下单必须显式携带 `tag = "agentTradeKit"`
 6. 开仓成功后必须立即设置止损
-7. 单笔最大风险不超过账户净值 `3%`
+7. 单笔最大风险不超过账户净值 `6%`
 8. 当日净值回撤超 `8%` 停止新开仓
 9. 最多同时持有 `2` 个标的
 10. 禁止对冲持仓
@@ -183,7 +183,8 @@ okx market open-interest --instType SWAP --instId XRP-USDT-SWAP
 ### 评分原则
 
 - 每个标的必须输出评分说明，说明高分或低分原因
-- 第一名与第二名差距过小 → 倾向 `观望`
+- 最优标的评分 < 8 分 → 直接输出 `观望`，不进入开仓流程
+- 第一名与第二名差距 < 1.5 分 → 倾向 `观望`
 - 所有标的评分都不够高 → 倾向 `跳过`
 
 ---
@@ -237,16 +238,16 @@ okx market open-interest --instType SWAP --instId XRP-USDT-SWAP
 ## Step 7：仓位计算
 
 ```
-账户可承受风险额 = 账户净值 × 3%
+账户可承受风险额 = 账户净值 × 6%
 止损价（多头）  = 开仓价 × 0.98
-止盈价（多头）  = 开仓价 × 1.04
+止盈价（多头）  = 开仓价 × 1.02
 止损价（空头）  = 开仓价 × 1.02
-止盈价（空头）  = 开仓价 × 0.96
+止盈价（空头）  = 开仓价 × 0.98
 单位风险        = |开仓价 - 止损价|
 sz              = 账户可承受风险额 / 单位风险
 
-所需保证金      = sz × ctVal × 开仓价 / 杠杆（3x）
-保证金上限      = 账户净值 × 30%
+所需保证金      = sz × ctVal × 开仓价 / 杠杆（5x）
+保证金上限      = 账户净值 × 45%
 
 若所需保证金 > 保证金上限：
   sz = floor(保证金上限 × 杠杆 / (ctVal × 开仓价))
@@ -273,7 +274,7 @@ okx --profile okx-live account balance USDT
 ### 开仓条件（全部满足才允许）
 
 1. 存在唯一最优标的
-2. 评分显著领先其他标的
+2. 最优标的评分 **≥ 8 分**，且显著领先其他标的（差距 ≥ 1.5 分）
 3. 趋势结构清晰
 4. funding 未出现明显极端拥挤
 5. ATR 合理
@@ -318,7 +319,7 @@ okx --profile okx-live swap place \
 
 **下单前设置杠杆**：
 ```bash
-okx --profile okx-live swap leverage --instId <选定标的> --lever 3 --mgnMode isolated --posSide long
+okx --profile okx-live swap leverage --instId <选定标的> --lever 5 --mgnMode isolated --posSide long
 ```
 
 **下单前检查持仓**：
@@ -481,7 +482,7 @@ okx --profile okx-live swap algo place \
 - `ordType = "market"`
 - `tag = "agentTradeKit"`
 - 开仓后立刻设置止损
-- 单笔风险不超过净值 3%
+- 单笔风险不超过净值 6%
 - 当日净值回撤超 8% 停止新开仓
 - 最多同时持有 2 个标的
 - 禁止对冲持仓
@@ -506,7 +507,7 @@ okx --profile okx-live swap algo place \
 
 下单前必须确认全部满足：
 
-1. 单笔最大风险 ≤ 账户净值 3%
+1. 单笔最大风险 ≤ 账户净值 6%
 2. 当日净值回撤 < 8%
 3. 当前持仓数 < 2
 4. 无对冲持仓
