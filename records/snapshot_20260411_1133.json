@@ -1,0 +1,24 @@
+{
+  "ts": "2026-04-11T11:33:51+08:00",
+  "mode": "live",
+  "bar": "4h",
+  "decision": "观望",
+  "best": "BTC-USDT-SWAP",
+  "best_score": 8.0,
+  "second_best": "ETH-USDT-SWAP",
+  "second_score": 5.5,
+  "scores": {
+    "BTC": 8.0, "ETH": 5.5, "SOL": 4.8, "XRP": 3.4
+  },
+  "indicators": {
+    "BTC": { "funding": -0.000535, "atr_pct": 1.32, "hist": 91.3 },
+    "ETH": { "funding": -0.00617, "atr_pct": 1.71, "ma10": 2216.62, "ma20": 2214.67 },
+    "SOL": { "funding": 0.00423, "atr_pct": 1.70, "ma10": 83.95, "ma20": 83.69 },
+    "XRP": { "funding": 0.01, "atr_pct": 1.36, "hist": 0.0009 }
+  },
+  "decision_reason": "BTC已持仓不重复；ETH评分不足(5.5)；SOL/XRP过低",
+  "positions": { "BTC-USDT-SWAP": { "side": "long", "sz": 2, "avg_px": 72916, "upl": 0.89 } },
+  "account_equity": 2045.30,
+  "risk_check": { "all_passed": true, "position_conflict": "BTC已持多" },
+  "anomalies": "记录文件写入受限（沙盒权限），已手动保存"
+}

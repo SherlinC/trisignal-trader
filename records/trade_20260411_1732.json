@@ -1,0 +1,19 @@
+{
+  "ts": "2026-04-11T17:32:45+08:00",
+  "instId": "SOL-USDT-SWAP",
+  "direction": "long",
+  "entry_px": 84.45,
+  "sl_px": 82.76,
+  "tp_px": 87.83,
+  "sz": 21,
+  "margin_used": 592.15,
+  "risk_amt": 35.49,
+  "ordType": "market",
+  "tag": "agentTradeKit",
+  "order_id": "3469452164387053568",
+  "algo_id": "3469452648855150592",
+  "sl_tp_status": "ok",
+  "mode": "live",
+  "margin_capped": false,
+  "account_equity": 2045.0
+}

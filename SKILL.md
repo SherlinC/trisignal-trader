@@ -123,6 +123,24 @@ okx market indicator atr  <instId> --bar 4H --params 14 --limit 1
 
 若四个标的全部不可用 → 本轮直接输出 `跳过`，记录"全部标的数据不可用"。
 
+### 指标完整性校验（数据采集完成后必须执行）
+
+进入 Step 3 评分前，对每个标的执行以下校验：
+
+**必须字段**（任一为 null / 缺失 / 0 → 该标的降级处理）：
+- MA5、MA10、MA20、MA60
+- DIF、DEA、Histogram
+- ATR(14)
+
+**降级规则**：
+- 缺失 1 个必须字段 → 该维度评分强制设为 3 分（中性偏低），并在评分说明中标注"[数据缺失]"
+- 缺失 2 个及以上必须字段 → 该标的整体评分上限为 5 分，不得开仓
+- MA5/MA10/MA20/MA60 任一缺失 → 均线结构维度强制 0 分
+- DIF/DEA/Hist 任一缺失 → MACD 维度强制 0 分
+- ATR 缺失 → ATR 维度强制 0 分，且不得输出 `开仓`
+
+**记录要求**：每个标的的数据完整性状态必须写入 snapshot 的 `indicators` 字段，null 值保留原样不得填充估算值。
+
 ---
 
 ## Step 2：市场情绪与事件面采集
@@ -293,7 +311,6 @@ okx --profile okx-live swap place \
   --posSide long \
   --ordType market \
   --sz <计算出的 sz> \
-  --tgtCcy base_ccy \
   --tag agentTradeKit
 ```
 
@@ -340,7 +357,6 @@ okx --profile okx-live swap algo place \
   --posSide long \
   --ordType oco \
   --sz <同开仓 sz> \
-  --tgtCcy base_ccy \
   --slTriggerPx <止损价> \
   --slOrdPx=-1 \
   --tpTriggerPx <止盈价> \
@@ -357,13 +373,28 @@ okx --profile okx-live swap algo place \
 
 ### 记录存储规则
 
-所有记录必须写入 `~/.claude/skills/trisignal-trader/records/` 目录下的 JSON 文件：
+记录由外部 shell 脚本（`run_trisignal.sh`）负责写入文件，Claude 只需在输出末尾打印特殊标记包裹的 JSON，shell 会自动提取并保存。
 
-- **Decision Snapshot**：每轮必须写入，文件名 `snapshot_YYYYMMDD_HHMM.json`
-- **Trade Record**：仅开仓时写入，文件名 `trade_YYYYMMDD_HHMM.json`
-- **Daily Summary**：每日汇总，文件名 `daily_YYYYMMDD.json`，每轮执行后追加更新
+**Claude 输出格式要求**（每轮执行结束时必须输出，不得省略）：
 
-若写入失败 → 在日志中输出完整 JSON 内容，并标注"⚠️ 文件写入失败，请手动保存"，不得静默忽略。
+```
+%%SNAPSHOT_BEGIN%%
+{ ...完整 snapshot JSON... }
+%%SNAPSHOT_END%%
+```
+
+开仓时额外输出：
+
+```
+%%TRADE_BEGIN%%
+{ ...完整 trade JSON... }
+%%TRADE_END%%
+```
+
+- JSON 必须是合法的单行或多行 JSON，不得包含注释
+- 标记行必须单独成行，前后无其他字符
+- shell 会自动提取并写入 `records/snapshot_YYYYMMDD_HHMM.json` 和 `records/trade_YYYYMMDD_HHMM.json`
+- 若 JSON 格式有误，shell 会在日志中报错，Claude 无需额外处理
 
 ### Decision Snapshot（每轮必须记录）
 
