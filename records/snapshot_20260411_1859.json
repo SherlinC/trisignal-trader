@@ -1,0 +1,47 @@
+{
+  "ts": "2026-04-11T18:58:00+08:00",
+  "mode": "live",
+  "bar": "4h",
+  "assets": ["BTC-USDT-SWAP", "ETH-USDT-SWAP", "SOL-USDT-SWAP", "XRP-USDT-SWAP"],
+  "skipped": [],
+  "scores": {
+    "BTC": { "score": 6.5, "reason": "均线顺排但MACD死叉hist=-23动能减弱", "dim": { "ma": 2.0, "macd": 0.8, "structure": 1.0, "oi": 0.5, "funding": 1.0, "atr": 1.0, "event": 0.2 } },
+    "ETH": { "score": 6.5, "reason": "均线顺排但DIF<DEA hist=-0.22轻微背离", "dim": { "ma": 2.0, "macd": 0.8, "structure": 1.0, "oi": 0.5, "funding": 1.0, "atr": 1.0, "event": 0.2 } },
+    "SOL": { "score": 7.5, "reason": "三信号共振最佳但评分未达8分阈值", "dim": { "ma": 2.0, "macd": 1.5, "structure": 1.2, "oi": 0.5, "funding": 1.0, "atr": 1.0, "event": 0.3 } },
+    "XRP": { "score": 4.5, "reason": "MA10<MA20结构破坏MACD死叉信号混乱", "dim": { "ma": 0.8, "macd": 0.5, "structure": 0.5, "oi": 0.5, "funding": 1.0, "atr": 1.0, "event": 0.2 } }
+  },
+  "indicators": {
+    "BTC": { "ma5": 72894.9, "ma10": 72403.8, "ma20": 71906.8, "ma60": 69234.2, "dif": 899.6, "dea": 911.1, "hist": -23.0, "atr": 893.1, "funding": 0.0000684214812935, "oi": 33779.5246 },
+    "ETH": { "ma5": 2240.81, "ma10": 2219.57, "ma20": 2214.12, "ma60": 2130.59, "dif": 25.80, "dea": 25.91, "hist": -0.22, "atr": 35.29, "funding": 0.0000695284710982, "oi": 723383.793 },
+    "SOL": { "ma5": 84.56, "ma10": 83.95, "ma20": 83.58, "ma60": 81.62, "dif": 0.71, "dea": 0.70, "hist": 0.01, "atr": 1.37, "funding": 0.0000188710749072, "oi": 2637307.96 },
+    "XRP": { "ma5": 1.3520, "ma10": 1.3468, "ma20": 1.3484, "ma60": 1.3306, "dif": 0.0042, "dea": 0.0048, "hist": -0.0012, "atr": 0.0169, "funding": -0.0000946609717874, "oi": 62780219.999 }
+  },
+  "best": "SOL-USDT-SWAP",
+  "direction": "long",
+  "decision": "跳过",
+  "decision_reason": "持仓数2/2已达上限(规则9)；SOL已有同向多头；SOL评分7.5<8分阈值",
+  "position_plan": {
+    "entry_px": 0,
+    "swing_ref": 0,
+    "sl_method": "none",
+    "sl_distance": 0,
+    "sl_distance_pct": 0,
+    "atr_at_entry": 0,
+    "sl_px": 0,
+    "tp_px": 0,
+    "risk_reward": "2:1",
+    "account_equity": 2032.06,
+    "risk_amt": 0,
+    "sz": 0,
+    "margin_used": 0,
+    "margin_capped": false
+  },
+  "risk_check": {
+    "funding_crowded": false,
+    "atr_filtered": false,
+    "account_risk": true,
+    "margin_capped": false,
+    "position_conflict": "持仓数2/2已达上限；SOL已有long仓位"
+  },
+  "anomalies": "事件面缺失（不影响流程）"
+}
