@@ -13,6 +13,7 @@ echo "[$(date)] Starting TriSignal V4.1 (parallel data fetch)..." >> "$LOG_FILE"
 
 # ── 并行拉取所有数据（~5s 完成，替代 Claude 串行调用的 ~60s）──────────────
 TMPDIR=$(mktemp -d)
+TMPDIR_OUT=$(mktemp -d)
 
 okx market indicator ma   BTC-USDT-SWAP --bar 4H --params 5,10,20,60 --limit 1 > "$TMPDIR/btc_ma"   2>&1 &
 okx market indicator macd BTC-USDT-SWAP --bar 4H --limit 1                      > "$TMPDIR/btc_macd" 2>&1 &
@@ -81,12 +82,38 @@ PROMPT
 rm -rf "$TMPDIR"
 
 # ── 调用 Claude 执行策略（只做分析+决策+下单，跳过数据采集）──────────────
+CLAUDE_OUTPUT_FILE="$TMPDIR_OUT/claude_output"
+mkdir -p "$TMPDIR_OUT"
+
 cd /Users/bytedance/Documents/claude/okx && \
   /Users/bytedance/.local/bin/claude -p "/trisignal-trader
 
-$PROMPT" >> "$LOG_FILE" 2>&1
+$PROMPT" 2>&1 | tee -a "$LOG_FILE" > "$CLAUDE_OUTPUT_FILE"
 
-EXIT_CODE=$?
+EXIT_CODE=${PIPESTATUS[0]}
+
+# ── 从 Claude 输出中提取并写入记录文件 ────────────────────────────────────
+RECORDS_DIR="/Users/bytedance/.claude/skills/trisignal-trader/records"
+mkdir -p "$RECORDS_DIR"
+TS_FILE=$(date +"%Y%m%d_%H%M")
+
+# 提取 snapshot
+SNAPSHOT_JSON=$(awk '/^%%SNAPSHOT_BEGIN%%/{found=1; next} /^%%SNAPSHOT_END%%/{found=0} found{print}' "$CLAUDE_OUTPUT_FILE")
+if [ -n "$SNAPSHOT_JSON" ]; then
+  echo "$SNAPSHOT_JSON" > "$RECORDS_DIR/snapshot_${TS_FILE}.json"
+  echo "[$(date)] Snapshot written: snapshot_${TS_FILE}.json" >> "$LOG_FILE"
+else
+  echo "[$(date)] WARNING: No snapshot marker found in Claude output" >> "$LOG_FILE"
+fi
+
+# 提取 trade record（仅开仓时存在）
+TRADE_JSON=$(awk '/^%%TRADE_BEGIN%%/{found=1; next} /^%%TRADE_END%%/{found=0} found{print}' "$CLAUDE_OUTPUT_FILE")
+if [ -n "$TRADE_JSON" ]; then
+  echo "$TRADE_JSON" > "$RECORDS_DIR/trade_${TS_FILE}.json"
+  echo "[$(date)] Trade record written: trade_${TS_FILE}.json" >> "$LOG_FILE"
+fi
+
+rm -rf "$TMPDIR_OUT"
 echo "[$(date)] Done (exit=$EXIT_CODE)." >> "$LOG_FILE"
 
 osascript -e 'display notification "TriSignal 跑完啦～ 快来看结果！" with title "OKX Trading Bot" sound name "Blow"' 2>/dev/null || true
