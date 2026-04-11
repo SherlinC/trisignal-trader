@@ -62,6 +62,10 @@ okx market open-interest --instType SWAP --instId BTC-USDT-SWAP > "$TMPDIR/btc_o
 okx market open-interest --instType SWAP --instId ETH-USDT-SWAP > "$TMPDIR/eth_oi" 2>&1 &
 okx market open-interest --instType SWAP --instId SOL-USDT-SWAP > "$TMPDIR/sol_oi" 2>&1 &
 okx market open-interest --instType SWAP --instId XRP-USDT-SWAP > "$TMPDIR/xrp_oi" 2>&1 &
+okx market open-interest --instType SWAP --instId BTC-USDT-SWAP --history --limit 2 > "$TMPDIR/btc_oi_hist" 2>&1 &
+okx market open-interest --instType SWAP --instId ETH-USDT-SWAP --history --limit 2 > "$TMPDIR/eth_oi_hist" 2>&1 &
+okx market open-interest --instType SWAP --instId SOL-USDT-SWAP --history --limit 2 > "$TMPDIR/sol_oi_hist" 2>&1 &
+okx market open-interest --instType SWAP --instId XRP-USDT-SWAP --history --limit 2 > "$TMPDIR/xrp_oi_hist" 2>&1 &
 okx --profile okx-live account balance USDT                      > "$TMPDIR/balance" 2>&1 &
 okx --profile okx-live swap positions                            > "$TMPDIR/positions" 2>&1 &
 
@@ -78,6 +82,7 @@ MACD: $(cat $TMPDIR/btc_macd)
 ATR: $(cat $TMPDIR/btc_atr)
 Funding: $(cat $TMPDIR/btc_fr)
 OI: $(cat $TMPDIR/btc_oi)
+OI历史(用于变化方向判断): $(cat $TMPDIR/btc_oi_hist 2>/dev/null || echo "UNAVAILABLE")
 
 === ETH-USDT-SWAP ===
 MA: $(cat $TMPDIR/eth_ma)
@@ -85,6 +90,7 @@ MACD: $(cat $TMPDIR/eth_macd)
 ATR: $(cat $TMPDIR/eth_atr)
 Funding: $(cat $TMPDIR/eth_fr)
 OI: $(cat $TMPDIR/eth_oi)
+OI历史(用于变化方向判断): $(cat $TMPDIR/eth_oi_hist 2>/dev/null || echo "UNAVAILABLE")
 
 === SOL-USDT-SWAP ===
 MA: $(cat $TMPDIR/sol_ma)
@@ -92,6 +98,7 @@ MACD: $(cat $TMPDIR/sol_macd)
 ATR: $(cat $TMPDIR/sol_atr)
 Funding: $(cat $TMPDIR/sol_fr)
 OI: $(cat $TMPDIR/sol_oi)
+OI历史(用于变化方向判断): $(cat $TMPDIR/sol_oi_hist 2>/dev/null || echo "UNAVAILABLE")
 
 === XRP-USDT-SWAP ===
 MA: $(cat $TMPDIR/xrp_ma)
@@ -99,6 +106,7 @@ MACD: $(cat $TMPDIR/xrp_macd)
 ATR: $(cat $TMPDIR/xrp_atr)
 Funding: $(cat $TMPDIR/xrp_fr)
 OI: $(cat $TMPDIR/xrp_oi)
+OI历史(用于变化方向判断): $(cat $TMPDIR/xrp_oi_hist 2>/dev/null || echo "UNAVAILABLE")
 
 === 账户信息 ===
 余额: $(cat $TMPDIR/balance)

@@ -201,9 +201,74 @@ okx market open-interest --instType SWAP --instId XRP-USDT-SWAP
 ### 评分原则
 
 - **输出格式严格限制**：每个标的仅输出一行评分摘要，格式为 `标的：X/10 — 关键原因（≤25字）`，**禁止输出详细分析表格**
-- 最优标的评分 < 8 分 → 直接输出 `观望`，不进入开仓流程
+- 最优标的评分 < 7.8 分 → 直接输出 `观望`，不进入开仓流程
 - 第一名与第二名差距 < 1.5 分 → 倾向 `观望`
 - 所有标的评分都不够高 → 倾向 `跳过`
+
+### 各维度锚定评分标准（必须严格对照打分，禁止凭感觉）
+
+**Dimension 1 — 均线结构（0-10）**
+
+| 分值 | 条件 |
+|------|------|
+| 9-10 | MA5>MA10>MA20>MA60 完美顺排，相邻MA间距 > 0.3%，明显发散 |
+| 7-8 | 四线顺排但间距压缩（相邻MA间距 < 0.3%），趋势存在但动能减弱 |
+| 5-6 | 三线顺排，一线偏离（如MA60未跟上），或刚形成顺排尚未确认 |
+| 3-4 | 两线交叉或缠绕，MA5/MA10反复穿越 |
+| 0-2 | 完全反排（MA5<MA10<MA20<MA60 做空方向除外）或严重缠绕无方向 |
+
+**Dimension 2 — MACD共振（0-10，×2权重）**
+
+| 分值 | 条件 |
+|------|------|
+| 9-10 | DIF>DEA，Hist>0 且连续3根递增，金叉确认且远离零轴 |
+| 7-8 | DIF>DEA，Hist>0 但数值较小或刚转正，金叉初期 |
+| 5-6 | DIF≈DEA（差值<1%），Hist在零轴附近震荡，方向不明 |
+| 3-4 | DIF<DEA，Hist<0 但绝对值较小，死叉初期或即将金叉 |
+| 0-2 | DIF<DEA，Hist<0 且连续扩大，死叉确认且加速下行 |
+
+**Dimension 3 — 价格结构延续性（0-10）**
+
+| 分值 | 条件 |
+|------|------|
+| 9-10 | 近5根K线高低点持续抬高，收盘价稳定在MA10上方，无长上影 |
+| 7-8 | 高低点抬高但幅度收窄，或偶有回踩MA10但未破 |
+| 5-6 | 价格在MA10-MA20之间震荡，结构模糊 |
+| 3-4 | 收盘价跌破MA20，或出现明显的高点降低 |
+| 0-2 | 连续跌破MA20，高低点持续降低，结构破坏 |
+
+**Dimension 4 — OI配合度（0-10）**
+
+| 分值 | 条件 |
+|------|------|
+| 9-10 | 价格上涨+OI同步增加（增幅>2%），多头资金持续流入 |
+| 7-8 | 价格上涨+OI小幅增加（0-2%），方向一致但力度一般 |
+| 5-6 | OI变化<1%或无历史对比数据，中性 |
+| 3-4 | 价格上涨但OI下降（轻度背离），获利了结迹象 |
+| 0-2 | 价格上涨但OI大幅下降（>3%），严重背离，假突破风险 |
+
+**Dimension 5 — Funding拥挤度（0-10）**
+
+| 分值 | 条件 |
+|------|------|
+| 9-10 | \|funding\| < 0.005%，极度中性，无拥挤 |
+| 7-8 | \|funding\| 0.005%-0.03%，轻微偏向但不拥挤 |
+| 5-6 | \|funding\| 0.03%-0.05%，有一定方向偏好 |
+| 3-4 | \|funding\| 0.05%-0.1%，拥挤风险上升 |
+| 0-2 | \|funding\| > 0.1%，明显拥挤，反转风险高 |
+
+**Dimension 6 — ATR合理性（0-10）**
+
+| 分值 | 条件 |
+|------|------|
+| 9-10 | ATR/价格 在 1.0%-2.0% 区间，波动适中，止损空间合理 |
+| 7-8 | ATR/价格 在 0.7%-1.0% 或 2.0%-2.5%，略偏但可接受 |
+| 5-6 | ATR/价格 在 0.5%-0.7% 或 2.5%-3.0%，偏低或偏高 |
+| 3-4 | ATR/价格 < 0.5%（机会不足）或 3.0%-4.0%（风险偏大） |
+| 0-2 | ATR/价格 > 4.0%（极端波动）或 < 0.3%（死水行情） |
+
+**Dimension 7 — 事件面一致性（0-10）**
+见上方 Dimension 7 评分规则表。
 
 ---
 
@@ -314,13 +379,23 @@ okx --profile okx-live account balance USDT
 ### 开仓条件（全部满足才允许）
 
 1. 存在唯一最优标的
-2. 最优标的评分 **≥ 8 分**，且显著领先其他标的（差距 ≥ 1.5 分）
-3. 趋势结构清晰
+2. 最优标的评分 **≥ 7.8 分**，且显著领先其他标的（差距 ≥ 1.5 分）
+3. 趋势结构清晰，**方向明确**（多头或空头，不可模糊）
 4. funding 未出现明显极端拥挤
 5. ATR 合理
 6. 风控未触发
 7. sz 计算有效
 8. 当前执行模式允许进入下单流程
+
+### 方向判断规则
+
+评分完成后，必须为最优标的确定方向：
+
+- **做多**：MA5>MA10>MA20>MA60 顺排 + DIF>DEA + Hist>0
+- **做空**：MA5<MA10<MA20<MA60 反排 + DIF<DEA + Hist<0
+- **方向不明**：均线顺排但 MACD 反向（如均线多头+MACD死叉）→ 不得开仓，输出 `观望`
+
+> 均线方向与 MACD 方向必须一致才允许开仓。任何矛盾信号 → 观望。
 
 ### 观望条件
 
@@ -338,6 +413,17 @@ okx --profile okx-live account balance USDT
 - sz 无法计算
 - 当前市场无高确定性机会
 
+### 持仓健康度检查（每轮必须执行，在新开仓决策之前）
+
+每轮策略执行时，先检查已有持仓的健康状况：
+
+1. 对每个已持仓标的，用本轮最新指标重新评分
+2. 若持仓标的评分 **≤ 4 分** → 输出 `建议平仓` 提示（不自动执行，需人工确认）
+3. 若持仓标的 MACD 方向与持仓方向**完全反转**（如持多但 DIF<DEA 且 Hist 连续3根为负）→ 输出 `信号恶化警告`
+4. 若持仓浮盈 ≥ 1.5R（即浮盈 ≥ 止损距离 × 1.5）→ 输出 `建议移动止损至成本价`
+
+**持仓检查结果写入 snapshot 的 `anomalies` 字段**，格式：`"持仓检查：BTC long 评分X分 [正常/警告/建议平仓]"`
+
 ---
 
 ## Step 9：下单规则
@@ -345,11 +431,22 @@ okx --profile okx-live account balance USDT
 仅当最终结果为 `开仓` 时执行。
 
 ```bash
+# 做多
 okx --profile okx-live swap place \
   --instId <选定标的> \
   --tdMode isolated \
   --side buy \
   --posSide long \
+  --ordType market \
+  --sz <计算出的 sz> \
+  --tag agentTradeKit
+
+# 做空
+okx --profile okx-live swap place \
+  --instId <选定标的> \
+  --tdMode isolated \
+  --side sell \
+  --posSide short \
   --ordType market \
   --sz <计算出的 sz> \
   --tag agentTradeKit
@@ -359,7 +456,10 @@ okx --profile okx-live swap place \
 
 **下单前设置杠杆**：
 ```bash
+# 做多
 okx --profile okx-live swap leverage --instId <选定标的> --lever 5 --mgnMode isolated --posSide long
+# 做空
+okx --profile okx-live swap leverage --instId <选定标的> --lever 5 --mgnMode isolated --posSide short
 ```
 
 **下单前检查持仓**：
@@ -391,11 +491,25 @@ okx --profile okx-live swap positions
 开仓成功后立即执行（止损 + 止盈合并为一条 OCO 委托）：
 
 ```bash
+# 做多平仓方向
 okx --profile okx-live swap algo place \
   --instId <选定标的> \
   --tdMode isolated \
   --side sell \
   --posSide long \
+  --ordType oco \
+  --sz <同开仓 sz> \
+  --slTriggerPx <止损价> \
+  --slOrdPx=-1 \
+  --tpTriggerPx <止盈价> \
+  --tpOrdPx=-1
+
+# 做空平仓方向
+okx --profile okx-live swap algo place \
+  --instId <选定标的> \
+  --tdMode isolated \
+  --side buy \
+  --posSide short \
   --ordType oco \
   --sz <同开仓 sz> \
   --slTriggerPx <止损价> \
