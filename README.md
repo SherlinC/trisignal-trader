@@ -34,7 +34,7 @@ trisignal-trader/
 |------|------|
 | [Claude Code CLI](https://claude.ai/code) | `claude` 命令，执行 skill |
 | [okx-trade-cli](https://www.npmjs.com/package/@okx_ai/okx-trade-cli) | `npm install -g @okx_ai/okx-trade-cli` |
-| OKX API 凭证 | 配置于 `~/.okx/config.toml`，profile 名 `live` |
+| OKX API 凭证 
 
 ---
 
@@ -44,7 +44,7 @@ trisignal-trader/
 
 ```bash
 npm install -g @okx_ai/okx-trade-cli
-okx config init   # 配置 API Key / Secret / Passphrase
+okx config init   # 配置
 ```
 
 ### 2. 手动触发一次
