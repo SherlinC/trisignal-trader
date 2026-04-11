@@ -12,8 +12,26 @@ LOG_FILE="$LOG_DIR/trisignal_${TIMESTAMP}.log"
 # ── 防并发锁（run_lock）─────────────────────────────────────────────────────
 # 同一时刻只允许一个 TriSignal 实例运行（防止 4h cron 与手动运行冲突）
 LOCK_FILE="$LOG_DIR/trisignal.lock"
-exec 9>"$LOCK_FILE"
-if ! flock -n 9; then
+# macOS 没有 flock，用 python3 原子锁
+if python3 -c "
+import sys, os
+lf = sys.argv[1]
+try:
+    fd = os.open(lf, os.O_CREAT|os.O_EXCL|os.O_WRONLY)
+    os.write(fd, str(os.getpid()).encode())
+    os.close(fd)
+    sys.exit(0)
+except FileExistsError:
+    pid = open(lf).read().strip()
+    try:
+        os.kill(int(pid), 0)
+        sys.exit(1)  # still running
+    except (ProcessLookupError, ValueError):
+        os.unlink(lf)
+        sys.exit(0)  # stale lock, remove and proceed
+" "$LOCK_FILE"; then
+    trap 'rm -f "$LOCK_FILE"' EXIT
+else
     echo "[$(date)] [run_lock] Already running (another instance holds the lock). Skipping." >> "$LOG_FILE"
     exit 0
 fi
