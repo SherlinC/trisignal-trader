@@ -1,0 +1,67 @@
+{
+  "ts": "2026-04-11T23:20:50Z",
+  "mode": "live",
+  "bar": "4h",
+  "assets": ["BTC-USDT-SWAP", "ETH-USDT-SWAP", "SOL-USDT-SWAP", "XRP-USDT-SWAP"],
+  "skipped": [],
+  "scores": {
+    "BTC": {
+      "score": 6.3,
+      "reason": "MA顺排但DIF<DEA且hist=-59.1，MACD空头背离均线多头",
+      "dim": { "ma": 9, "macd": 3, "structure": 6, "oi": 5, "funding": 9, "atr": 7, "event": 5 }
+    },
+    "ETH": {
+      "score": 7.3,
+      "reason": "MA完美顺排，DIF>DEA且hist正，多头共振最强",
+      "dim": { "ma": 9, "macd": 8, "structure": 8, "oi": 5, "funding": 9, "atr": 7, "event": 5 }
+    },
+    "SOL": {
+      "score": 6.9,
+      "reason": "MA顺排，MACD微弱正值(hist=0.05)，动能偏弱",
+      "dim": { "ma": 9, "macd": 6, "structure": 7, "oi": 5, "funding": 9, "atr": 7, "event": 5 }
+    },
+    "XRP": {
+      "score": 4.7,
+      "reason": "MA5/10/20近乎缠绕，DIF<DEA，hist负值，无趋势",
+      "dim": { "ma": 4, "macd": 2, "structure": 3, "oi": 5, "funding": 8, "atr": 6, "event": 5 }
+    }
+  },
+  "indicators": {
+    "BTC": { "ma5": 72825.7, "ma10": 72512.7, "ma20": 71968.0, "ma60": 69300.2, "dif": 871.7, "dea": 901.3, "hist": -59.1, "atr": 862.2, "funding": 0.0000522795757081, "oi": 33836.7923 },
+    "ETH": { "ma5": 2241.11, "ma10": 2225.99, "ma20": 2214.15, "ma60": 2132.58, "dif": 26.47, "dea": 26.26, "hist": 0.44, "atr": 34.19, "funding": -0.0000293240711999, "oi": 724620.205 },
+    "SOL": { "ma5": 84.44, "ma10": 84.11, "ma20": 83.60, "ma60": 81.64, "dif": 0.71, "dea": 0.69, "hist": 0.05, "atr": 1.35, "funding": -0.0000361671294728, "oi": 2637739.37 },
+    "XRP": { "ma5": 1.3478, "ma10": 1.3466, "ma20": 1.3465, "ma60": 1.3303, "dif": 0.0035, "dea": 0.0045, "hist": -0.0022, "atr": 0.0164, "funding": -0.0000787164688786, "oi": 63785654.0 }
+  },
+  "best": "ETH-USDT-SWAP",
+  "direction": "long",
+  "decision": "观望",
+  "decision_reason": "ETH最优但得分7.3<8阈值；1/2名差距0.4<1.5；已持BTC+SOL达2标的上限；可加仓标的BTC(6.3)/SOL(6.9)均未达阈值；BTC存在MACD空头背离",
+  "position_plan": {
+    "entry_px": 0,
+    "swing_ref": 0,
+    "sl_method": "none",
+    "sl_distance": 0,
+    "sl_distance_pct": 0,
+    "atr_at_entry": 0,
+    "sl_px": 0,
+    "tp_px": 0,
+    "risk_reward": "2:1",
+    "account_equity": 2044.335,
+    "risk_amt": 0,
+    "sz": 0,
+    "margin_used": 0,
+    "margin_capped": false
+  },
+  "risk_check": {
+    "funding_crowded": false,
+    "atr_filtered": false,
+    "account_risk": false,
+    "margin_capped": false,
+    "position_conflict": "已持有BTC+SOL共2个不同标的，达策略上限，ETH为新标的不可开仓（规则9）"
+  },
+  "existing_positions": [
+    { "instId": "SOL-USDT-SWAP", "side": "long", "sz": 21, "avgPx": 84.45, "lever": 3 },
+    { "instId": "BTC-USDT-SWAP", "side": "long", "sz": 2, "avgPx": 72916, "lever": 3 }
+  ],
+  "anomalies": "BTC: MACD空头背离（DIF<DEA，hist=-59.1）与MA多头结构矛盾，需持续观察"
+}
