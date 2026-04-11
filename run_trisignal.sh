@@ -103,6 +103,9 @@ OI: $(cat $TMPDIR/xrp_oi)
 === 账户信息 ===
 余额: $(cat $TMPDIR/balance)
 当前持仓: $(cat $TMPDIR/positions)
+
+=== 事件面底色（由 Daily Review 生成，Chainbase 社交数据驱动）===
+$(cat /Users/bytedance/.claude/skills/trisignal-trader/event_context.txt 2>/dev/null || echo "无事件面数据，Dimension 7 按中性5分处理")
 PROMPT
 )
 

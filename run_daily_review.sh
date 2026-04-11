@@ -99,6 +99,36 @@ if [ "$SNAPSHOT_COUNT" -eq 0 ]; then
     exit 0
 fi
 
+# ── Chainbase 社交数据采集（事件面底色）──────────────────────────────────────────
+echo "[$(date)] Fetching Chainbase social data..." >> "$LOG_FILE"
+SOCIAL_TMPDIR=$(mktemp -d)
+
+chainbase tops trending > "$SOCIAL_TMPDIR/trending" 2>&1 &
+chainbase tops search "bitcoin" > "$SOCIAL_TMPDIR/btc" 2>&1 &
+chainbase tops search "ethereum" > "$SOCIAL_TMPDIR/eth" 2>&1 &
+chainbase tops search "solana" > "$SOCIAL_TMPDIR/sol" 2>&1 &
+chainbase tops search "XRP" > "$SOCIAL_TMPDIR/xrp" 2>&1 &
+wait
+
+SOCIAL_DATA="=== Twitter/X 社交热点（Chainbase）===
+全市场 Trending Top20:
+$(cat "$SOCIAL_TMPDIR/trending" 2>/dev/null | grep -E 'Keyword:|Summary:|Score:' | head -60 || echo 'UNAVAILABLE')
+
+BTC 相关:
+$(cat "$SOCIAL_TMPDIR/btc" 2>/dev/null | grep -E 'Keyword:|Summary:|Score:' | head -20 || echo 'UNAVAILABLE')
+
+ETH 相关:
+$(cat "$SOCIAL_TMPDIR/eth" 2>/dev/null | grep -E 'Keyword:|Summary:|Score:' | head -20 || echo 'UNAVAILABLE')
+
+SOL 相关:
+$(cat "$SOCIAL_TMPDIR/sol" 2>/dev/null | grep -E 'Keyword:|Summary:|Score:' | head -20 || echo 'UNAVAILABLE')
+
+XRP 相关:
+$(cat "$SOCIAL_TMPDIR/xrp" 2>/dev/null | grep -E 'Keyword:|Summary:|Score:' | head -20 || echo 'UNAVAILABLE')"
+
+rm -rf "$SOCIAL_TMPDIR"
+echo "[$(date)] Chainbase data fetched." >> "$LOG_FILE"
+
 # ── 获取当前持仓 ───────────────────────────────────────────────────────────────
 CURRENT_POSITIONS=$(okx --profile okx-live swap positions 2>&1 || echo "UNAVAILABLE")
 CURRENT_BALANCE=$(okx --profile okx-live account balance USDT 2>&1 || echo "UNAVAILABLE")
@@ -133,6 +163,9 @@ ${CURRENT_BALANCE}
 
 ### 近期历史复盘摘要（用于趋势对比）
 ${PAST_REVIEWS:-（暂无历史复盘）}
+
+### 社交/事件面数据（Chainbase Twitter/X 实时）
+${SOCIAL_DATA}
 
 ---
 
@@ -182,6 +215,18 @@ ${PAST_REVIEWS:-（暂无历史复盘）}
 本日策略表现：⭐⭐⭐⭐⭐（1-5星）
 核心问题一句话：
 
+## 事件面底色输出（供下一日主策略 Dimension 7 使用）
+
+基于上方社交数据，为每个标的输出事件面底色。严格按以下格式输出，不得添加额外内容：
+
+%%EVENT_CONTEXT_BEGIN%%
+BTC: bullish|neutral|bearish — [≤15字关键原因]
+ETH: bullish|neutral|bearish — [≤15字关键原因]
+SOL: bullish|neutral|bearish — [≤15字关键原因]
+XRP: bullish|neutral|bearish — [≤15字关键原因]
+MACRO: bullish|neutral|bearish — [≤15字宏观情绪]
+%%EVENT_CONTEXT_END%%
+
 PROMPT
 )
 
@@ -208,6 +253,23 @@ else
 fi
 
 rm -rf "$TMPDIR_OUT"
+
+# ── 提取事件面底色（供主策略 Dimension 7 使用）────────────────────────────────
+EVENT_CONTEXT=$(awk '/^%%EVENT_CONTEXT_BEGIN%%/{found=1; next} /^%%EVENT_CONTEXT_END%%/{found=0} found{print}' "$REVIEW_OUTPUT")
+EVENT_FILE="$SKILL_DIR/event_context.txt"
+if [ -n "$EVENT_CONTEXT" ]; then
+    echo "# Event Context — generated $(date)" > "$EVENT_FILE"
+    echo "$EVENT_CONTEXT" >> "$EVENT_FILE"
+    echo "[$(date)] Event context saved: event_context.txt" >> "$LOG_FILE"
+else
+    echo "# Event Context — $(date)" > "$EVENT_FILE"
+    echo "BTC: neutral — 无社交数据" >> "$EVENT_FILE"
+    echo "ETH: neutral — 无社交数据" >> "$EVENT_FILE"
+    echo "SOL: neutral — 无社交数据" >> "$EVENT_FILE"
+    echo "XRP: neutral — 无社交数据" >> "$EVENT_FILE"
+    echo "MACRO: neutral — 无社交数据" >> "$EVENT_FILE"
+    echo "[$(date)] WARNING: No event context marker found, wrote neutral defaults" >> "$LOG_FILE"
+fi
 
 # ── 提取参数建议（%%PARAMS_BEGIN%% 标记，供未来自动应用）────────────────────────
 PARAMS_JSON=$(awk '/^%%PARAMS_BEGIN%%/{found=1; next} /^%%PARAMS_END%%/{found=0} found{print}' "$REVIEW_OUTPUT")

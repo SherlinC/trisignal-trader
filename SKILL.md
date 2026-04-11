@@ -178,11 +178,25 @@ okx market open-interest --instType SWAP --instId XRP-USDT-SWAP
 | 4 | OI 配合度 | ×1 | 价格方向与 OI 变化一致 | 明显背离 |
 | 5 | funding 拥挤度 | ×1 | 费率接近 0，无拥挤 | \|funding\| > 0.1% 降分；拥挤+OI 快速放大显著降分 |
 | 6 | ATR 合理性 | ×1 | ATR 与趋势阶段匹配 | ATR 明显过高（风险大）或过低（机会不足） |
-| 7 | 事件面一致性 | ×1 | 事件面与技术方向一致 | 事件面明显冲突 |
+| 7 | 事件面一致性 | ×1 | 事件面底色 bullish 且与技术方向一致 | 事件面 bearish 或与技术方向冲突；宏观面 bearish 全标的 -1 |
 
 **加权评分公式**：`总分 = (MA + MACD×2 + 结构 + OI + Funding + ATR + 事件) / 8`
 
 > MACD 是趋势动能的核心信号，金叉/死叉对方向预测力最强，故赋予双倍权重。每个维度满分 10 分，总分最高 10 分。
+
+### Dimension 7 评分规则（事件面一致性）
+
+数据来源：`event_context.txt`（由 Daily Review 每日凌晨生成，基于 Chainbase Twitter/X 社交数据）
+
+| 底色 | 与技术方向关系 | 分值 |
+|------|--------------|------|
+| bullish + 技术面多头 | 共振 | 7-9 |
+| bullish + 技术面空头 | 冲突 | 3-4 |
+| neutral | 无论技术方向 | 5 |
+| bearish + 技术面空头 | 共振 | 7-9 |
+| bearish + 技术面多头 | 冲突 | 2-4 |
+| MACRO bearish | 全标的额外 -1 | — |
+| 数据缺失 | — | 5（标记"事件面缺失"）|
 
 ### 评分原则
 
