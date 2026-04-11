@@ -24,6 +24,8 @@ compatibility:
 
 # TriSignal Trader — 多信号融合 AI 选标的策略 V4.0
 
+> **预计执行时间：3~5 分钟**（数据采集 ~1min，评分决策 ~1min，下单+OCO ~1min，记录写入 ~30s）
+
 ## 目标
 
 在固定 `4h` 周期下，对 `BTC-USDT-SWAP`、`ETH-USDT-SWAP`、`SOL-USDT-SWAP`、`XRP-USDT-SWAP` 四个永续合约进行横向评分比较，选出趋势结构最清晰、风险收益比最合理的唯一候选标的，输出且仅输出：

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-04-11T08:00:00+08:00",
+  "instId": "BTC-USDT-SWAP",
+  "direction": "long",
+  "entry_px": 72919.7,
+  "sl_px": 71461.5,
+  "tp_px": 75836.5,
+  "sz": 2,
+  "margin_used": 486.1,
+  "risk_amt": 29.2,
+  "ordType": "market",
+  "tag": "agentTradeKit",
+  "order_id": "3468294584264564736",
+  "algo_id": "3468294779896111104",
+  "sl_tp_status": "ok",
+  "mode": "live",
+  "margin_capped": true,
+  "sz_original": 4,
+  "account_equity": 2045.13
+}

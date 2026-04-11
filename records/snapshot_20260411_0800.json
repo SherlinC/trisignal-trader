@@ -1,0 +1,44 @@
+{
+  "ts": "2026-04-11T08:00:00+08:00",
+  "mode": "live",
+  "bar": "4h",
+  "assets": ["BTC-USDT-SWAP", "ETH-USDT-SWAP", "SOL-USDT-SWAP", "XRP-USDT-SWAP"],
+  "skipped": [],
+  "scores": {
+    "BTC": { "score": 7.9, "reason": "完美多头均线顺排发散，MACD三线全部多头共振(DIF951.6>DEA907.3，Hist88.7>0)，资金费率≈0，ATR合理" },
+    "ETH": { "score": 6.4, "reason": "均线顺排但MA10/MA20间距仅1.9压缩，MACD多头但Hist(1.57)偏弱，资金费率中性" },
+    "SOL": { "score": 6.4, "reason": "均线顺排但MA10/MA20间距仅0.16压缩明显，MACD Hist(0.22)中等，资金费率中性" },
+    "XRP": { "score": 3.9, "reason": "MA20>MA5均线结构破坏，MACD极弱(Hist仅0.0004)，资金费率为四者最高" }
+  },
+  "indicators": {
+    "BTC": { "ma5": 72417.7, "ma10": 72097.7, "ma20": 71597.1, "ma60": 69019.6, "dif": 951.6, "dea": 907.3, "hist": 88.7, "atr": 1013.7, "funding": -0.0000112, "oi": 33869.476 },
+    "ETH": { "ma5": null, "ma10": 2209.85, "ma20": 2207.95, "ma60": null, "dif": null, "dea": null, "hist": 1.57, "atr": null, "funding": -0.0000635, "oi": null },
+    "SOL": { "ma5": null, "ma10": 83.69, "ma20": 83.53, "ma60": null, "dif": null, "dea": null, "hist": 0.22, "atr": null, "funding": 0.0000477, "oi": null },
+    "XRP": { "ma5": 1.3485, "ma10": null, "ma20": 1.3494, "ma60": null, "dif": null, "dea": null, "hist": 0.0004, "atr": null, "funding": 0.0001, "oi": null }
+  },
+  "best": "BTC-USDT-SWAP",
+  "direction": "long",
+  "decision": "开仓",
+  "position": {
+    "entry_px": 72919.7,
+    "sl_px": 71461.5,
+    "tp_px": 75836.5,
+    "sz": 2,
+    "margin_used": 486.1,
+    "risk_amt": 29.2,
+    "margin_capped": true,
+    "sz_original": 4
+  },
+  "risk_check": {
+    "funding_crowded": false,
+    "atr_filtered": false,
+    "account_risk": false,
+    "margin_capped": true
+  },
+  "order": {
+    "orderId": "3468294584264564736",
+    "algoId": "3468294779896111104",
+    "sl_tp_status": "ok"
+  },
+  "anomalies": "记录文件写入失败（工作区权限限制），已手动保存"
+}
