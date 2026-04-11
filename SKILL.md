@@ -351,7 +351,7 @@ ATR = ATR(14)，来自 Step 1 已采集数据
 单位风险        = 最终止损距离
 sz              = 账户可承受风险额 / 单位风险
 
-所需保证金      = sz × ctVal × 开仓价 / 杠杆（5x）
+所需保证金      = sz × ctVal × 开仓价 / 杠杆（3x）
 保证金上限      = 账户净值 × 45%
 
 若所需保证金 > 保证金上限：
@@ -457,9 +457,9 @@ okx --profile okx-live swap place \
 **下单前设置杠杆**：
 ```bash
 # 做多
-okx --profile okx-live swap leverage --instId <选定标的> --lever 5 --mgnMode isolated --posSide long
+okx --profile okx-live swap leverage --instId <选定标的> --lever 3 --mgnMode isolated --posSide long
 # 做空
-okx --profile okx-live swap leverage --instId <选定标的> --lever 5 --mgnMode isolated --posSide short
+okx --profile okx-live swap leverage --instId <选定标的> --lever 3 --mgnMode isolated --posSide short
 ```
 
 **下单前检查持仓**：
