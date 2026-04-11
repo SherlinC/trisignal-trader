@@ -9,6 +9,15 @@ mkdir -p "$LOG_DIR"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOG_FILE="$LOG_DIR/trisignal_${TIMESTAMP}.log"
 
+# ── 防并发锁（run_lock）─────────────────────────────────────────────────────
+# 同一时刻只允许一个 TriSignal 实例运行（防止 4h cron 与手动运行冲突）
+LOCK_FILE="$LOG_DIR/trisignal.lock"
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+    echo "[$(date)] [run_lock] Already running (another instance holds the lock). Skipping." >> "$LOG_FILE"
+    exit 0
+fi
+
 echo "[$(date)] Starting TriSignal V4.1 (parallel data fetch)..." >> "$LOG_FILE"
 
 # ── 并行拉取所有数据（~5s 完成，替代 Claude 串行调用的 ~60s）──────────────
