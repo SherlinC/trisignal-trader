@@ -48,7 +48,7 @@ compatibility:
 4. 下单必须使用 `ordType = "market"`
 5. 每次下单必须显式携带 `tag = "agentTradeKit"`
 6. 开仓成功后必须立即设置止损
-7. 单笔最大风险不超过账户净值 `8%`
+7. 单笔最大风险不超过账户净值 `12%`（评分梯度：8%/10%/12%）
 8. 当日净值回撤超 `8%` 停止新开仓
 9. 最多同时持有 `2` 个**不同标的**（同一标的可同方向加仓，不限次数）
 10. 禁止对冲持仓
@@ -384,15 +384,29 @@ ATR = ATR(14)，来自 Step 1 已采集数据
 
 **必须记录**：`sl_method`（structure / atr_min / atr_max）、`swing_low/high`、`atr_at_entry`、`sl_distance`、`sl_distance_pct`
 
+### 评分-杠杆-风险梯度（比赛模式）
+
+根据最优标的评分动态调整杠杆和风险额，高确定性信号放大收益：
+
+| 评分区间 | 杠杆 | 单笔风险额 | 保证金上限 | 盈亏比 |
+|---------|------|-----------|-----------|--------|
+| 7.8 - 8.2 | 3x | 净值 × 8% | 净值 × 45% | 2:1 |
+| 8.2 - 8.8 | 5x | 净值 × 10% | 净值 × 55% | 2:1 |
+| 8.8 - 10 | 8x | 净值 × 12% | 净值 × 65% | 2:1 |
+
+**必须记录**：`score_tier`（"base" / "strong" / "extreme"）、实际使用的杠杆和风险比例
+
 ### 仓位计算
 
 ```
-账户可承受风险额 = 账户净值 × 8%
+根据评分查表确定：杠杆倍数、风险比例、保证金上限比例
+
+账户可承受风险额 = 账户净值 × 风险比例（8%/10%/12%）
 单位风险        = 最终止损距离
 sz              = 账户可承受风险额 / 单位风险
 
-所需保证金      = sz × ctVal × 开仓价 / 杠杆（3x）
-保证金上限      = 账户净值 × 45%
+所需保证金      = sz × ctVal × 开仓价 / 杠杆（3x/5x/8x）
+保证金上限      = 账户净值 × 保证金上限比例（45%/55%/65%）
 
 若所需保证金 > 保证金上限：
   sz = floor(保证金上限 × 杠杆 / (ctVal × 开仓价))
@@ -530,12 +544,12 @@ okx --profile okx-live swap place \
 
 **强制约束**：`--tag agentTradeKit` 缺失则视为参数不合法，不允许提交订单。
 
-**下单前设置杠杆**：
+**下单前设置杠杆**（根据评分梯度选择 3/5/8）：
 ```bash
 # 做多
-okx --profile okx-live swap leverage --instId <选定标的> --lever 3 --mgnMode isolated --posSide long
+okx --profile okx-live swap leverage --instId <选定标的> --lever <梯度杠杆> --mgnMode isolated --posSide long
 # 做空
-okx --profile okx-live swap leverage --instId <选定标的> --lever 3 --mgnMode isolated --posSide short
+okx --profile okx-live swap leverage --instId <选定标的> --lever <梯度杠杆> --mgnMode isolated --posSide short
 ```
 
 **下单前检查持仓**：
@@ -762,7 +776,7 @@ okx --profile okx-live swap algo place \
 - `ordType = "market"`
 - `tag = "agentTradeKit"`
 - 开仓后立刻设置止损
-- 单笔风险不超过净值 8%
+- 单笔风险不超过净值 12%（梯度：8%/10%/12%）
 - 当日净值回撤超 8% 停止新开仓
 - 最多同时持有 2 个标的
 - 禁止对冲持仓
@@ -787,7 +801,7 @@ okx --profile okx-live swap algo place \
 
 下单前必须确认全部满足：
 
-1. 单笔最大风险 ≤ 账户净值 8%
+1. 单笔最大风险 ≤ 账户净值 12%（按评分梯度：8%/10%/12%）
 2. 当日净值回撤 < 8%
 3. 持有的**不同标的数** < 2（同一标的加仓不计入新标的数）
 4. 无对冲持仓（同标的反方向禁止）
