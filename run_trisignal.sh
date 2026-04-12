@@ -116,8 +116,8 @@ OI历史(用于变化方向判断): $(cat $TMPDIR/xrp_oi_hist 2>/dev/null || ech
 === 事件面底色（由 Daily Review 生成，Chainbase 社交数据驱动）===
 $(cat /Users/bytedance/.claude/skills/trisignal-trader/event_context.txt 2>/dev/null || echo "无事件面数据，Dimension 7 按中性5分处理")
 
-=== 上一轮 Snapshot（用于信号恶化连续性判断）===
-$(ls -t /Users/bytedance/.claude/skills/trisignal-trader/records/snapshot_*.json 2>/dev/null | head -1 | xargs cat 2>/dev/null || echo "无上一轮记录")
+=== 上一轮持仓检查结果（用于信号恶化连续性判断）===
+$(LAST_SNAP=$(ls -t /Users/bytedance/.claude/skills/trisignal-trader/records/snapshot_*.json 2>/dev/null | head -1); if [ -n "$LAST_SNAP" ]; then python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print('时间:',d.get('ts','')); print('anomalies:',d.get('anomalies','无')); print('decision:',d.get('decision',''))" "$LAST_SNAP" 2>/dev/null || echo "解析失败"; else echo "无上一轮记录"; fi)
 PROMPT
 )
 
