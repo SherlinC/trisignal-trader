@@ -37,6 +37,7 @@ else
 fi
 
 echo "[$(date)] Starting TriSignal V4.1 (parallel data fetch)..." >> "$LOG_FILE"
+osascript -e 'display notification "开始采集数据 + 评分决策..." with title "TriSignal 启动" sound name "Tink"' 2>/dev/null || true
 
 # ── 并行拉取所有数据（~5s 完成，替代 Claude 串行调用的 ~60s）──────────────
 TMPDIR=$(mktemp -d)
@@ -114,6 +115,9 @@ OI历史(用于变化方向判断): $(cat $TMPDIR/xrp_oi_hist 2>/dev/null || ech
 
 === 事件面底色（由 Daily Review 生成，Chainbase 社交数据驱动）===
 $(cat /Users/bytedance/.claude/skills/trisignal-trader/event_context.txt 2>/dev/null || echo "无事件面数据，Dimension 7 按中性5分处理")
+
+=== 上一轮 Snapshot（用于信号恶化连续性判断）===
+$(ls -t /Users/bytedance/.claude/skills/trisignal-trader/records/snapshot_*.json 2>/dev/null | head -1 | xargs cat 2>/dev/null || echo "无上一轮记录")
 PROMPT
 )
 
@@ -154,4 +158,8 @@ fi
 rm -rf "$TMPDIR_OUT"
 echo "[$(date)] Done (exit=$EXIT_CODE)." >> "$LOG_FILE"
 
-osascript -e 'display notification "TriSignal 跑完啦～ 快来看结果！" with title "OKX Trading Bot" sound name "Blow"' 2>/dev/null || true
+# 提取决策结果用于通知
+DECISION=$(grep -oP '"decision"\s*:\s*"\K[^"]+' "$RECORDS_DIR/snapshot_${TS_FILE}.json" 2>/dev/null | head -1)
+BEST=$(grep -oP '"best"\s*:\s*"\K[^"]+' "$RECORDS_DIR/snapshot_${TS_FILE}.json" 2>/dev/null | head -1)
+NOTIF_MSG="${DECISION:-完成} ${BEST:+($BEST)}"
+osascript -e "display notification \"$NOTIF_MSG\" with title \"TriSignal 结果\" sound name \"Blow\"" 2>/dev/null || true
